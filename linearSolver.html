@@ -1,0 +1,290 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+<div id="inputDiv">
+</div>
+
+<p>Linear equation of size:</p>
+<select id="selection" onclick="drawInput()"></select>
+<div id="output"> </div>
+
+<button onclick="calculate()">Calculate!</button>
+<script>
+var pow = function(num, exponent) {
+	var out = 1;
+	for (i = 0; i < exponent; i++) {
+		out*=num;
+	}
+	return out;
+}
+
+var calculate = function() {
+	var arra = [];
+	var arr = [];
+	for (var i = 0; i < document.getElementById("selection").value; i++) {
+		var row = [];
+		var solutionRow = [];
+		for(var n = 0; n < document.getElementById("selection").value; n++) {
+			var str = "input" + i + "," + n;
+			row.push(document.getElementById(str).value);
+		}
+		arra.push(row);
+		solutionRow.push(document.getElementById("answer" + i).value);
+		arr.push(solutionRow);
+	}
+	var A = new Matrix(arra);
+	var B = new Matrix(arr);
+	var Sol = Matrix.mult(A.inverse(), B);
+	document.getElementById("output").innerHTML = "";
+	for (var i = 0; i < document.getElementById("selection").value; i++) {
+		document.getElementById("output").innerHTML += "<p>"+varNames[i] +" = "+Sol.matrix[i][0].toFixed(4)+"</p>"
+	}
+}
+
+
+var varNames = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", ];
+var drawInput = function() {
+	var input = document.getElementById("inputDiv");
+	var size = document.getElementById("selection").value;
+	input.innerHTML = "";
+	for(var i = 0; i < size; i++) {
+		input.innerHTML += "<form>";
+		for (var n = 0; n < size; n++) {
+			if(n !== size - 1) {
+				input.innerHTML += "<input id='input"+i+","+n+"'>"+ varNames[n]+ " + </input>";
+			} else {
+				input.innerHTML += "<input id='input"+i+","+n+"'>"+ varNames[n]+ " </input>";//id='input"+ i +"," + n"'></input>";
+			}
+			
+		}
+		input.innerHTML += " = <input id='answer"+i+"'></input>"
+		
+		input.innerHTML += " </form>";
+	}
+}
+drawInput();
+
+for(i = 2; i <= 15; i++) {
+	
+	document.getElementById("selection").innerHTML += "<option value='"+i+"'>"+i+"</option>";
+}
+var Matrix = function(matrixArray) {
+    var prevVal = 0;
+    var currVal = 0;
+    for (var i = 0; i < matrixArray.length; i++){
+        currVal = matrixArray[i].length;
+        if(currVal === prevVal || i === 0){ 
+            prevVal = currVal;
+            this.columns = currVal;
+        } else {
+            println("Invalid matrix");
+            return;
+        }
+    }
+    
+    this.matrix = matrixArray;
+    
+    this.rows = matrixArray.length;
+};
+
+Matrix.prototype.getMatrix = function() {
+    var arr = [];
+    for (var i = 0; i < this.matrix.length; i++) {
+        var row = [];
+        for(var n = 0; n < this.matrix[i].length; n++) {
+            row.push(this.matrix[i][n]);
+        }
+        arr.push(row);
+    }
+    return new Matrix(arr);
+};
+
+Matrix.prototype.add = function(matrix) {
+    if(this.columns === matrix.columns && this.rows === matrix.rows) {
+        for (var i = 0; i < this.rows; i++) {
+            for (var n = 0; n < this.columns; n++) {
+                this.matrix[i][n] += matrix.matrix[i][n];
+            }
+        }
+    } else {
+        println("Invalid addition");
+        return;
+    }
+};
+
+Matrix.add = function(matrix1, matrix2) {
+    var mat = matrix1;
+    if(matrix1.columns === matrix2.columns && matrix1.rows === matrix2.rows) {
+        for (var i = 0; i < matrix1.rows; i++) {
+            for (var n = 0; n < matrix1.columns; n++) {
+                mat.matrix[i][n] += matrix2.matrix[i][n];
+            }
+        }
+        
+        return mat;
+    } else {
+        println("Invalid addition");
+        return;
+    }
+}; 
+
+Matrix.prototype.getColumn = function(colNum) {
+    var col = [];
+    for ( var i = 0; i < this.rows; i++){
+        col.push(this.matrix[i][colNum]);
+    }
+    return col;
+};
+
+Matrix.prototype.transpose = function() {
+    var arr = [];
+    for(var i = 0; i < this.columns; i++) {
+        arr.push(this.getColumn(i));
+    }
+    return new Matrix(arr);
+};
+
+Matrix.prototype.spliceColumn = function(colNum) {
+    for ( var i = 0; i < this.matrix.length; i++){
+        this.matrix[i].splice(colNum, 1);
+    }
+    
+};
+
+Matrix.prototype.spliceRow = function(row) {
+    this.matrix.splice(row, 1);
+    
+};
+  
+Matrix.prototype.getMinor = function(row, column) {
+    var mat = this.getMatrix();
+    mat.spliceRow(row);
+    mat.spliceColumn(column);
+    return mat.getMatrix();
+};
+ 
+ 
+Matrix.mult = function(matrix1, matrix2){
+        if(matrix1.columns === matrix2.rows) {
+            var returnMat = [];
+            for (var i = 0; i < matrix1.rows; i++) {
+                var row = [];
+                for (var n = 0; n < matrix2.columns; n++) {
+                    var add = 0;
+                    for (var k = 0; k < matrix1.columns; k++){
+                        add += matrix1.matrix[i][k] * matrix2.matrix[k][n];
+                    } 
+                    row.push(add);
+                }
+                returnMat.push(row);
+            }
+            return new Matrix(returnMat); 
+        } else{
+            println("invalid multiplication");
+            return;
+        }
+    
+};
+
+Matrix.prototype.multScalar = function(s) {
+    for(var i = 0; i < this.rows; i++) {
+        for (var n = 0; n < this.columns; n++) {
+            this.matrix[i][n] *= s;
+        }
+    }
+};
+
+Matrix.prototype.determinant = function() {
+    if(this.columns === this.rows) {
+        if(this.columns === 2) {
+            var det = 0;
+            det += this.matrix[0][0] * this.matrix[1][1];
+            det -= this.matrix[0][1] * this.matrix[1][0];
+            return det;
+        } else if(this.columns > 2)  {
+            var det = 0;
+            for(var i = 0; i < this.matrix.length; i++){
+                var temp = this.getMinor(0, i);
+                
+                var temp1 = temp.determinant(); 
+                
+                var add = 0;
+                add += this.matrix[0][i] * temp1;
+                if(i % 2 === 0) { 
+                    det += add;
+                } else {
+                    det -= add;
+                }
+            }
+            
+            return det;
+        } else {
+            return this.matrix;
+        }
+    } else { 
+        println("Invalid determinant " + this.matrix);
+        return; 
+    }
+};
+
+Matrix.prototype.cofactor = function() {
+    
+    if(this.columns === this.rows) {
+       
+        var arr = [];
+        for(var i = 0; i < this.rows; i++){
+            var row = [];
+            for (var n = 0; n < this.columns; n++) {
+                var val = pow(-1, i+n) * this.getMinor(i, n).determinant();
+                row.push(val);
+            }
+            arr.push(row);
+        }
+        return new Matrix(arr);
+        
+        
+        
+        
+    }
+}; 
+
+Matrix.prototype.inverse = function() {
+    var factor = 1/this.determinant();
+    var mat = this.cofactor().transpose();
+    mat.multScalar(factor);
+    return new Matrix(mat.matrix);
+}; 
+
+var mat = new Matrix([
+    [1, 14, 3],
+    [11,  4.97, 5],
+    [12, -7, 6.574]
+]);
+
+var mat2 = new Matrix([
+    [1, 2, 3],
+    [4.3456, 5, 7]
+]);
+
+var mat3 = new Matrix([
+    [2, 3],
+    [5, 7]
+]);
+
+var mat4 = Matrix.mult(mat.inverse(), mat);
+
+var mat5 = Matrix.mult(mat3, mat2);
+
+
+   
+
+
+
+
+ 
+
+
+</script>
+</body>
