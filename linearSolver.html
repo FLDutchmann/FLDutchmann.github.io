@@ -31,7 +31,7 @@ var calculate = function() {
 	var Sol = Matrix.mult(A.inverse(), B);
 	document.getElementById("output").innerHTML = "";
 	for (var i = 0; i < document.getElementById("selection").value; i++) {
-		document.getElementById("output").innerHTML += "<p>"+varNames[i] +" = "+Sol.matrix[i][0].toFixed(4)+"</p>"
+		document.getElementById("output").innerHTML += "<p>"+varNames[i] +" = "+ Sol.matrix[i][0].toFixed(4)+"</p>"
 	}
 }
 
@@ -229,13 +229,13 @@ Matrix.prototype.cofactor = function() {
         for(var i = 0; i < this.rows; i++){
             var row = [];
             for (var n = 0; n < this.columns; n++) {
-				var val = 0;
-				if(i+n % 2 === 0) {
+				var val;
+				if(i+n % 2 === 1) {
+					val = -this.getMinor(i, n).determinant();
+				} else{
 					val = this.getMinor(i, n).determinant();
-				} else {
-					var val = -this.getMinor(i, n).determinant();
-                
 				}
+                
                 row.push(val);
             }
             arr.push(row);
