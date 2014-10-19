@@ -39,7 +39,12 @@ var calculate = function() {
 	var Sol = Matrix.mult(A.inverse(), B);
 	document.getElementById("output").innerHTML = "";
 	for (var i = 0; i < document.getElementById("selection").value; i++) {
-		document.getElementById("output").innerHTML += "<p>"+varNames[i] +" = "+ Sol.matrix[i][0].toFixed(4)+"</p>"
+		if(isNaN(Sol.matrix[i][0])) {
+			document.getElementById("output").innerHTML += "<p>"+varNames[i] +" is unsolvable, sorry!</p>"
+		} else {
+			document.getElementById("output").innerHTML += "<p>"+varNames[i] +" = "+ Sol.matrix[i][0].toFixed(4)+"</p>"
+		}
+		
 	}
 }
 
