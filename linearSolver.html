@@ -12,6 +12,14 @@
 
 <button onclick="calculate()">Calculate!</button>
 <script>
+var pow = function(num, exponent) {
+	var tot = 1;
+	for(var i = 0; i < exponent; i++) {
+		tot *= num;
+	}
+	return tot;
+}
+
 var calculate = function() {
 	var arra = [];
 	var arr = [];
@@ -230,11 +238,11 @@ Matrix.prototype.cofactor = function() {
             var row = [];
             for (var n = 0; n < this.columns; n++) {
 				var val;
-				if(i+n % 2 === 1) {
-					val = -this.getMinor(i, n).determinant();
-				} else{
-					val = this.getMinor(i, n).determinant();
-				}
+				
+				val = pow(-1, i+n) * this.getMinor(i, n).determinant();
+				
+
+				
                 
                 row.push(val);
             }
