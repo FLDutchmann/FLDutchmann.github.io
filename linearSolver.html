@@ -12,13 +12,7 @@
 
 <button onclick="calculate()">Calculate!</button>
 <script>
-var pow = function(num, exponent) {
-	var tot = 1;
-	for(var i = 0; i < exponent; i++) {
-		tot *= num;
-	}
-	return tot;
-}
+var pow = Math.pow;
 
 var calculate = function() {
 	var arra = [];
