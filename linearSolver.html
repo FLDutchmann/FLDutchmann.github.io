@@ -237,7 +237,13 @@ Matrix.prototype.cofactor = function() {
         for(var i = 0; i < this.rows; i++){
             var row = [];
             for (var n = 0; n < this.columns; n++) {
-                var val = pow(-1, i+n) * this.getMinor(i, n).determinant();
+				var val = 0;
+				if(i+n % 2 === 0) {
+					val = this.getMinor(i, n).determinant();
+				} else {
+					var val = -this.getMinor(i, n).determinant();
+                
+				}
                 row.push(val);
             }
             arr.push(row);
@@ -256,35 +262,5 @@ Matrix.prototype.inverse = function() {
     mat.multScalar(factor);
     return new Matrix(mat.matrix);
 }; 
-
-var mat = new Matrix([
-    [1, 14, 3],
-    [11,  4.97, 5],
-    [12, -7, 6.574]
-]);
-
-var mat2 = new Matrix([
-    [1, 2, 3],
-    [4.3456, 5, 7]
-]);
-
-var mat3 = new Matrix([
-    [2, 3],
-    [5, 7]
-]);
-
-var mat4 = Matrix.mult(mat.inverse(), mat);
-
-var mat5 = Matrix.mult(mat3, mat2);
-
-
-   
-
-
-
-
- 
-
-
 </script>
 </body>
