@@ -7,7 +7,7 @@
 			
 			var canvas = document.getElementById("ctx"),
 				c = canvas.getContext("2d"),
-				PI = Math.pi,
+				PI = Math.PI,
 				TWO_PI = PI * 2,
 				HALF_PI = PI/2,
 				QUARTER_PI = PI/4,
@@ -19,11 +19,11 @@
 				keyIsPressed = false,
 				width = canvas.width,
 				height = canvas.height;
-				LEFT = 37;
-				UP = 38;
-				RIGHT = 39;
-				DOWN = 40;
-			
+				LEFT = 37,
+				UP = 38,
+				RIGHT = 39,
+				DOWN = 40,
+				fps = 60; //Warning: affects simulation speed
 			
 			function updateMouse(e) {
 				var pos = getMousePos(canvas, e);
@@ -41,6 +41,17 @@
 			}
 			var keys = [];
 			
+			var BoundingBox = function(x, y, X, Y) {
+				this.topLeft = new Vector2(x, y);
+				this.bottomRight = new Vector2(X, Y);
+			}
+			
+			BoundingBox.prototype.getExactPos = function(pos) {
+				var xy = Vector2.add(this.topLeft, pos);
+				var XY = Vector2.add(this.bottomRight, pos);
+				return new BoundingBox(xy.x, xy.y, XY.x, XY.y);
+			}
+			
 			window.addEventListener('keyup',checkUp,false);
 			function checkUp(e) {
 				keys[e.keyCode] = false;
@@ -57,8 +68,8 @@
 				keys[e.keyCode] = true;
 				keysPressed += 1;
 			}
-
-
+			
+			var colliders = [];
 			var Ship = function() { // The spaceship object
 				this.position = new Vector2(200, 200);
 				console.log(this.position);
@@ -70,10 +81,14 @@
 				this.aVelocity = 0;
 				this.aAcceleration = 0;
 				
-
+				this.cooldown = 0;
+				this.maxCooldown = 1;
+				
+				this.boundingBox = new BoundingBox(-8, -8, 8, 8);
+				colliders.push(this);
 			};
 
-			Ship.prototype.display = function() { //draws the ship
+			Ship.prototype.display = function(c) { //draws the ship
 				c.save();
 				c.translate(this.position.x, this.position.y);
 				c.rotate(this.angle);
@@ -93,10 +108,10 @@
 			};
 
 			Ship.prototype.update = function() {
-				
+				this.cooldown -= 1/30;
 				
 				this.aVelocity += this.aAcceleration;
-				this.aVelocity = constrain(this.aVelocity, -0.1, 0.1);
+				this.aVelocity = constrain(this.aVelocity, -0.07, 0.07);
 				this.angle += this.aVelocity;
 				this.aAcceleration = 0;
 				
@@ -108,6 +123,8 @@
 				this.position.add(this.velocity);
 				this.acceleration.mult(0);//resets the accelerations
 				this.spAcceleration.mult(0);
+				
+				
 			};
 
 			Ship.prototype.addForce = function(f) {
@@ -143,11 +160,21 @@
 					var force = new Vector2 (0, -0.01);
 					this.addForce(force);
 				}
+				
+				if (keyIsPressed && keys[DOWN]) {
+					
+					var force = new Vector2 (0, -0.01);
+					this.addForce(force);
+				}
+				
+				if(keys[88]) { //x
+					this.fireBullet();
+				}
 			};
 
 			Ship.prototype.applyDrag = function() {// calculates the drag
 				var speed = this.velocity.mag();
-				var dragMagnitude = 0.005 * speed * speed;
+				var dragMagnitude = 0.003 * speed * speed;
 				
 				// Direction is inverse of velocity
 				var dragForce = this.velocity.get();
@@ -183,6 +210,41 @@
 				}
 			};
 			
+			Ship.prototype.fireBullet = function() {
+				if(this.cooldown <= 0) {
+					var vel = new Vector2(0, 5);
+					vel.rotate(this.angle);
+					new Bullet(this.position.get(), vel);
+					this.cooldown = this.maxCooldown;
+				}
+			}
+			
+			var bullets = [];
+			
+			var Bullet = function(pos, vel) {
+				this.position = pos;
+				this.velocity = vel;
+				this.radius = 2;
+				this.boundingBox = new BoundingBox(-this.radius/2, -this.radius/2, this.radius/2, this.radius/2);
+				colliders.push(this);
+				bullets.push(this);
+			}
+			
+			Bullet.prototype.update = function() {
+				this.position.add(this.velocity);
+			}
+			
+			Bullet.prototype.draw = function(ctx) {
+				
+				ctx.fillStyle = 'black';
+				ctx.beginPath();
+				ctx.arc(this.position.x, this.position.y, this.radius, 0, TWO_PI);
+				ctx.fill();
+				
+				
+			}
+			
+			ship.fireBullet();
 			setInterval(function() {
 				keyPressed = false;
 				c.fillStyle = "white";
@@ -192,27 +254,14 @@
 				ship.calculateAngularDrag();
 				ship.applyDrag();
 				ship.update();
-				ship.display();
-
-			}, 30);
-			
-			/*var Ship = function() {
+				ship.display(c);
 				
-			}
-			
-			setInterval(function() {
-				c.fillStyle = "white";
-				c.fillRect(-250, -250, 500, 500);
-				var v1 =new Vector2(mouseX - 250, mouseY - 250); ;
-				var m1 = v1.mag();
-				c.strokeStyle = "black";
-				c.beginPath();
-				c.moveTo(0, 0);
-				c.lineTo(v1.x, v1.y);
-				c.moveTo(10 - 250, 10 - 250);
-				c.lineTo(m1 - 250, 10 - 250);
-				c.stroke();
-			}, 30);*/
+				bullets.forEach(function(bullet){
+					bullet.update();
+					bullet.draw(c);
+				});
+				
+			}, 1000/fps);
 		};
 	</script>
 	<style>
