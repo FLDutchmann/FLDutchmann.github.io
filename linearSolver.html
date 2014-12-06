@@ -21,7 +21,32 @@ var pow = function(num, exponent) {
 }
 
 var calculate = function() {
-	var arra = [];
+	var variables = [];
+	var indeces = [];
+	var size = document.getElementById("selection").value;
+	for (var i = 0; i < size; i++) {
+		input = document.getElementById(i).value;
+		var sides = input.split("=");
+		if (input.length !== 2) {
+			return;
+		}
+		var adds = input[0].split("+");
+		window.alert(2);
+		adds.forEach(function(product){
+			var number = parseInt(product);
+			var variable = product.split(number);
+			console.log(variable);
+			variables.forEach(function(varName, index) {
+				if(variable !== varName) {
+					varibles.push(variable);
+					indeces[variable] = index;
+				}
+			});
+			
+		});
+	}
+	
+	/*var arra = [];
 	var arr = [];
 	for (var i = 0; i < document.getElementById("selection").value; i++) {
 		var row = [];
@@ -33,7 +58,7 @@ var calculate = function() {
 		arra.push(row);
 		solutionRow.push(document.getElementById("answer" + i).value);
 		arr.push(solutionRow);
-	}
+	}*/
 	var A = new Matrix(arra);
 	var B = new Matrix(arr);
 	var Sol = Matrix.mult(A.inverse(), B);
@@ -49,9 +74,15 @@ var calculate = function() {
 }
 
 
-var varNames = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", ];
 var drawInput = function() {
 	var input = document.getElementById("inputDiv");
+	input.innerHTML = "";
+	var size = document.getElementById("selection").value;
+	
+	for(var i = 0; i < size; i++){
+		input.innerHTML += "<input id='" + i + "'></input> <br/>"
+	}
+	/*var input = document.getElementById("inputDiv");
 	var size = document.getElementById("selection").value;
 	input.innerHTML = "";
 	for(var i = 0; i < size; i++) {
@@ -67,7 +98,7 @@ var drawInput = function() {
 		input.innerHTML += " = <input id='answer"+i+"'></input>"
 		
 		input.innerHTML += " </form>";
-	}
+	}*/
 }
 drawInput();
 
