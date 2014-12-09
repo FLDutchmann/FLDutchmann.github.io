@@ -72,7 +72,7 @@
 			var colliders = [];
 			var Ship = function() { // The spaceship object
 				this.position = new Vector2(200, 200);
-				console.log(this.position);
+				this.class = "ship";
 				this.velocity = new Vector2(0, 0);
 				this.acceleration = new Vector2(0, 0);//the acceleration is rotated by the rotation of the ship at every update
 				this.spAcceleration = new Vector2(0, 0);// special acceleration is not affected by the rotation of the ship, used for calculating drag
@@ -88,23 +88,27 @@
 				colliders.push(this);
 			};
 
-			Ship.prototype.display = function(c) { //draws the ship
-				c.save();
-				c.translate(this.position.x, this.position.y);
-				c.rotate(this.angle);
+			Ship.prototype.display = function(ctx) { //draws the ship
 				
-				c.fillStyle = 'rgb(128, 23, 23)';
-				c.beginPath();
-				c.moveTo(0, 8);
-				c.lineTo(-5, -4);
-				c.lineTo(5, -4);
-				c.lineTo(0, 8);
-				c.fill();
-				c.stroke();
-				c.rect(-4, -6, 2, 1);
-				c.rect(1, -6, 2, 1);
+				ctx.fillStyle = 'rgb(128, 23, 23)';
+				ctx.save();
+				ctx.translate(this.position.x, this.position.y);
+				ctx.rotate(this.angle);
+				ctx.fillStroke = 'black';
+				ctx.beginPath();
 				
-				c.restore();
+				ctx.moveTo(0, 8);
+				ctx.lineTo(-5, -4);
+				ctx.lineTo(5, -4);
+				ctx.lineTo(0, 8);
+				ctx.fill();
+				ctx.stroke();
+				ctx.fillRect(-4, -6, 2, 1);
+				ctx.fillRect(1, -6, 2, 1);
+				ctx.strokeRect(-4, -6, 2, 1);
+				ctx.strokeRect(1, -6, 2, 1);
+				
+				ctx.restore();
 			};
 
 			Ship.prototype.update = function() {
@@ -214,15 +218,20 @@
 				}
 			}
 			
+			Ship.prototype.onCollide = function() {
+				
+			}
+			
 			var bullets = [];
 			
 			var Bullet = function(pos, vel) {
 				this.position = pos;
 				this.velocity = vel;
+				this.class = "bullet";
 				this.radius = 2;
 				this.boundingBox = new BoundingBox(-this.radius/2, -this.radius/2, this.radius/2, this.radius/2);
-				colliders.push(this);
-				bullets.push(this);
+				this.collidersIndex = colliders.push(this) - 1;
+				this.bulletsIndex = bullets.push(this) - 1;
 			}
 			
 			Bullet.prototype.update = function() {
@@ -236,8 +245,105 @@
 				ctx.arc(this.position.x, this.position.y, this.radius, 0, TWO_PI);
 				ctx.fill();
 				
-				
 			}
+			
+			Bullet.prototype.onCollide = function(col) {
+				console.log(col);
+				if(col.class !== "ship")this.delete();
+			}
+			
+			Bullet.prototype.delete = function() {
+				colliders[this.collidersIndex] = null;
+				bullets[this.bulletsIndex] = null;
+			}
+			
+			var Enemy1 = function(x, y) {
+				this.position = new Vector2(x, y);
+				this.velocity = new Vector2(0, 0);
+				this.boundingBox = new BoundingBox(-5, -5, 5, 5);
+				
+				this.collidersIndex = colliders.push(this) - 1;
+				this.enemiesIndex = enemies.push(this) - 1;
+				this.class = 'Enemy1';
+			}
+			
+			Enemy1.prototype.draw = function(ctx) {
+				ctx.fillStyle = 'green';
+				ctx.rect(this.position.x - 5, this.position.y - 5, 10, 10);
+				ctx.fill();
+			}
+			
+			Enemy1.prototype.update = function() {
+				this.position.add(this.velocity);
+			}
+			
+			Enemy1.prototype.pathFinding = function(ship) {
+				var diff = ship.position.get();
+				diff.sub(this.position);
+				diff.normalize();
+				diff.mult(1);
+				this.velocity = diff;
+			}
+			
+			Enemy1.prototype.onCollide = function(obj) {
+				if(obj.class === "bullet"){
+					colliders[this.collidersIndex] = null;
+					enemies[this.enemiesIndex] = null;
+			
+				}
+			}
+			
+			var Box = function(pos) {
+				this.exists = true;
+				this.position = pos;
+				this.class = "box";
+				this.boundingBox = new BoundingBox(-10, -10, 10, 10);
+				this.collidersIndex = colliders.push(this) - 1;
+			}
+			
+			Box.prototype.onCollide = function() {
+				this.exists = false;
+				colliders[this.collidersIndex] = null;
+			}
+			
+			Box.prototype.draw = function(ctx){
+				ctx.fillStyle = "brown";
+				ctx.fillRect(this.position.x - 10, this.position.y - 10, 20, 20);
+			}
+			
+			var checkCollision = function(obj1, obj2) {
+				realBound1 = obj1.boundingBox.getExactPos(obj1.position);
+				realBound2 = obj2.boundingBox.getExactPos(obj2.position);
+				if(realBound1.topLeft.x > realBound2.bottomRight.x) return false;
+				if(realBound1.topLeft.y > realBound2.bottomRight.y) return false;
+				if(realBound2.topLeft.x > realBound1.bottomRight.x) return false;
+				if(realBound2.topLeft.y > realBound1.bottomRight.y) return false;
+
+				return true;
+			}
+			
+			var checkCollisions = function() {
+				var anythingCollides = false;
+				for (var i = 0; i < colliders.length; i++) {
+					if(colliders[i]!== null) {
+						for(var n = i + 1; n < colliders.length; n++) {
+							if(colliders[n] !== null){							
+								
+
+								var collides = checkCollision(colliders[i], colliders[n]);
+								if(collides) {
+									var coli = colliders[i];
+									var coln = colliders[n];
+									colliders[i].onCollide(coln);
+									colliders[n].onCollide(coli);
+								}
+							}
+						}
+					}
+				}
+			}
+			var timer = 0;
+			var enemies = [];
 			
 			setInterval(function() {
 				keyPressed = false;
@@ -250,9 +356,26 @@
 				ship.update();
 				ship.display(c);
 				
-				bullets.forEach(function(bullet){
-					bullet.update();
-					bullet.draw(c);
+				checkCollisions();
+				
+				timer++;
+				if(timer % (60 * 10) === 0){
+					new Enemy1(Math.random(400), Math.random(400));
+				}
+				
+				enemies.forEach(function (enemy){
+					if(enemy !== null) {
+						enemy.pathFinding(ship);
+						enemy.update();
+						enemy.draw(c);
+					}
+				});
+				
+				bullets.forEach(function(bullet, i){
+					if(bullet !== null){
+						bullet.update();
+						bullet.draw(c);
+					}
 				});
 				
 			}, 1000/fps);
@@ -293,7 +416,7 @@
 		}
 		
 		Vector2.add = function(v1, v2) {
-			return v1.add(v2);
+			return new Vector2(v1.x + v2.x, v1.y + v2.y);
 		}
 		
 		Vector2.prototype.sub = function(vector) {
