@@ -2,381 +2,194 @@
 <html>
 <head>
 	<title></title>
+	<canvas id="ctx" width="500" height="500">
+		It appears your browser doesn't support the canvas tag! Get chrome.
+	</canvas>
 	<script>
-		window.onload = function() {
-			
-			var canvas = document.getElementById("ctx"),
-				c = canvas.getContext("2d"),
-				PI = Math.PI,
-				TWO_PI = PI * 2,
-				HALF_PI = PI/2,
-				QUARTER_PI = PI/4,
-				ic = document.getElementById("ictx").getContext("2d"),
-				mouseX,
-				mouseY,
-				keyPressed = false,
-				keysPressed = 0,
-				keyIsPressed = false,
-				width = canvas.width,
-				height = canvas.height;
-				LEFT = 37,
-				UP = 38,
-				RIGHT = 39,
-				DOWN = 40,
-				fps = 60; //Warning: affects simulation speed
-			
-			function updateMouse(e) {
-				var pos = getMousePos(canvas, e);
-				mouseX = pos.x;
-				mouseY = pos.y;
+		
+	
+		Array.prototype.nullForEach = function(func) {
+			this.forEach(function(a, b, c) {
+				if(a !== null){
+					func(a, b, c);
 				}
-			window.addEventListener('mousemove', updateMouse, false);
+			});
+		}
+	
+		var canvas = document.getElementById("ctx"),
+			c = canvas.getContext("2d"),
+			PI = Math.PI,
+			TWO_PI = PI * 2,
+			HALF_PI = PI/2,
+			QUARTER_PI = PI/4,
+			mouseX,
+			mouseY,
+			keyPressed = false,
+			keysPressed = 0,
+			keyIsPressed = false,
+			width = canvas.width,
+			height = canvas.height;
+			LEFT = 37,
+			UP = 38,
+			RIGHT = 39,
+			DOWN = 40,
+			fps = 60; //Warning: affects simulation speed
+		
+		var keys = [];
+		var colliders = [];
+		var bullets = [];
+		var enemies = [];
+		var buttons = [];
+		
+		var timer = 1;
+	</script>
+	<script>
+	
+	
+	
+	function updateMouse(e) {
+		var pos = getMousePos(canvas, e);
+		mouseX = pos.x;
+		mouseY = pos.y;
+		}
+	window.addEventListener('mousemove', updateMouse, false);
 
-			function getMousePos(canvas, evt) {
-				var rect = canvas.getBoundingClientRect();
-				return {
-				  x: evt.clientX - rect.left,
-				  y: evt.clientY - rect.top
-				};
+	function getMousePos(canvas, evt) {
+		var rect = canvas.getBoundingClientRect();
+		return {
+		  x: evt.clientX - rect.left,
+		  y: evt.clientY - rect.top
+		};
+	}
+	
+	
+	
+	window.addEventListener('click', onClick, false);
+	
+	function onClick() {
+		buttons.forEach(function(button) {
+		
+			console.log(button.checkMouseOver());
+			if(button.exists && button.checkMouseOver()) {
+				button.onClick();
 			}
-			var keys = [];
-			
-			var BoundingBox = function(x, y, X, Y) {
-				this.topLeft = new Vector2(x, y);
-				this.bottomRight = new Vector2(X, Y);
-			}
-			
-			BoundingBox.prototype.getExactPos = function(pos) {
-				var xy = Vector2.add(this.topLeft, pos);
-				var XY = Vector2.add(this.bottomRight, pos);
-				return new BoundingBox(xy.x, xy.y, XY.x, XY.y);
-			}
-			
-			window.addEventListener('keyup',checkUp,false);
-			function checkUp(e) {
-				keys[e.keyCode] = false;
-				keysPressed -= 1;
-				if(keysPressed === 0) {
-					keyIsPressed = false;
-				} else {
-					keyIsPressed = true;
-				}
-			}
-			
-			window.addEventListener('keydown',checkDown,false);
-			function checkDown(e) {
-				keys[e.keyCode] = true;
-				keysPressed += 1;
-			}
-			
-			var colliders = [];
-			var Ship = function() { // The spaceship object
-				this.position = new Vector2(200, 200);
-				this.class = "ship";
-				this.velocity = new Vector2(0, 0);
-				this.acceleration = new Vector2(0, 0);//the acceleration is rotated by the rotation of the ship at every update
-				this.spAcceleration = new Vector2(0, 0);// special acceleration is not affected by the rotation of the ship, used for calculating drag
-				
-				this.angle = 0;
-				this.aVelocity = 0;
-				this.aAcceleration = 0;
-				
-				this.cooldown = 0;
-				this.maxCooldown = 1;
-				
-				this.boundingBox = new BoundingBox(-8, -8, 8, 8);
-				colliders.push(this);
-			};
+		});
+	}
+	
+	window.addEventListener('keyup',checkUp,false);
+	function checkUp(e) {
+		keys[e.keyCode] = false;
+		keysPressed -= 1;
+		if(keysPressed === 0) {
+			keyIsPressed = false;
+		} else {
+			keyIsPressed = true;
+		}
+	}
+	
+	window.addEventListener('keydown',checkDown,false);
+	function checkDown(e) {
+		keys[e.keyCode] = true;
+		keysPressed += 1;
+	}
+	
+	var checkCollision = function(obj1, obj2) {
+		realBound1 = obj1.boundingBox.getExactPos(obj1.position);
+		realBound2 = obj2.boundingBox.getExactPos(obj2.position);
+		if(realBound1.topLeft.x > realBound2.bottomRight.x) return false;
+		if(realBound1.topLeft.y > realBound2.bottomRight.y) return false;
+		if(realBound2.topLeft.x > realBound1.bottomRight.x) return false;
+		if(realBound2.topLeft.y > realBound1.bottomRight.y) return false;
 
-			Ship.prototype.display = function(ctx) { //draws the ship
-				
-				ctx.fillStyle = 'rgb(128, 23, 23)';
-				ctx.save();
-				ctx.translate(this.position.x, this.position.y);
-				ctx.rotate(this.angle);
-				ctx.fillStroke = 'black';
-				ctx.beginPath();
-				
-				ctx.moveTo(0, 8);
-				ctx.lineTo(-5, -4);
-				ctx.lineTo(5, -4);
-				ctx.lineTo(0, 8);
-				ctx.fill();
-				ctx.stroke();
-				ctx.fillRect(-4, -6, 2, 1);
-				ctx.fillRect(1, -6, 2, 1);
-				ctx.strokeRect(-4, -6, 2, 1);
-				ctx.strokeRect(1, -6, 2, 1);
-				
-				ctx.restore();
-			};
+		return true;
+	}
+	
+	var checkCollisions = function() {
+		var anythingCollides = false;
+		for (var i = 0; i < colliders.length; i++) {
+			if(colliders[i]!== null) {
+				for(var n = i + 1; n < colliders.length; n++) {
+					if(colliders[n] !== null){							
+						
 
-			Ship.prototype.update = function() {
-				this.cooldown -= 1/30;
-				
-				this.aVelocity += this.aAcceleration;
-				this.aVelocity = constrain(this.aVelocity, -0.07, 0.07);
-				this.angle += this.aVelocity;
-				this.aAcceleration = 0;
-				
-				this.acceleration.rotate(this.angle);//rotates the acceleration to the right direction
-				
-				this.velocity.add(this.spAcceleration);//special acceleration has not been affected by the rotation of the ship
-				this.velocity.add(this.acceleration);
-				
-				this.position.add(this.velocity);
-				this.acceleration.mult(0);//resets the accelerations
-				this.spAcceleration.mult(0);
-				
-				
-			};
-
-			Ship.prototype.addForce = function(f) {
-				this.acceleration.add(f);
-			};
-
-			Ship.prototype.addAForce = function(af) {
-				this.aAcceleration += af;
-			};
-
-			var ship = new Ship();
-			console.log(ship);
-			Ship.prototype.doUserInput = function() {
-				
-				
-				// the inputs allow you to press multipe keys at the same time, for further explaination see top of code
-				if (keyIsPressed && keys[RIGHT]) {
-					this.addAForce(0.005);
-				}
-				
-				if (keyIsPressed && keys[LEFT]) {
-					this.addAForce(-0.005);
-				}
-				
-				if (keyIsPressed && keys[UP]) {
-					
-					var force = new Vector2 (0, 0.02);// the force gets rotated appropriately
-					this.addForce(force);
-				}
-				
-				if (keyIsPressed && keys[DOWN]) {
-					
-					var force = new Vector2 (0, -0.01);
-					this.addForce(force);
-				}
-				
-				
-				if(keys[88]) { //x
-					this.fireBullet();
-				}
-			};
-
-			Ship.prototype.applyDrag = function() {// calculates the drag
-				var speed = this.velocity.mag();
-				var dragMagnitude = 0.003 * speed * speed;
-				
-				// Direction is inverse of velocity
-				var dragForce = this.velocity.get();
-				dragForce.mult(-1);
-				
-				// Scale according to magnitude
-				dragForce.normalize();
-				dragForce.mult(dragMagnitude);
-				this.spAcceleration.add(dragForce);
-			};
-
-			Ship.prototype.calculateAngularDrag = function() {//stops rotation
-				var f = this.aVelocity;
-				f *= -0.02;
-				this.aAcceleration += f;
-			};
-
-			Ship.prototype.doBorders = function() {//wraps the ship around the borders
-				if (this.position.x > width) {
-					this.position.x = 0;
-				}
-				
-				if (this.position.x < 0) {
-					this.position.x = width;
-				}
-				
-				if (this.position.y > height) {
-					this.position.y = 0;
-				}
-				
-				if (this.position.y < 0) {
-					this.position.y = height;
-				}
-			};
-			
-			Ship.prototype.fireBullet = function() {
-				if(this.cooldown <= 0) {
-					var vel = new Vector2(0, 5);
-					vel.rotate(this.angle);
-					new Bullet(this.position.get(), vel);
-					this.cooldown = this.maxCooldown;
-				}
-			}
-			
-			Ship.prototype.onCollide = function() {
-				
-			}
-			
-			var bullets = [];
-			
-			var Bullet = function(pos, vel) {
-				this.position = pos;
-				this.velocity = vel;
-				this.class = "bullet";
-				this.radius = 2;
-				this.boundingBox = new BoundingBox(-this.radius/2, -this.radius/2, this.radius/2, this.radius/2);
-				this.collidersIndex = colliders.push(this) - 1;
-				this.bulletsIndex = bullets.push(this) - 1;
-			}
-			
-			Bullet.prototype.update = function() {
-				this.position.add(this.velocity);
-			}
-			
-			Bullet.prototype.draw = function(ctx) {
-				
-				ctx.fillStyle = 'black';
-				ctx.beginPath();
-				ctx.arc(this.position.x, this.position.y, this.radius, 0, TWO_PI);
-				ctx.fill();
-				
-			}
-			
-			Bullet.prototype.onCollide = function(col) {
-				console.log(col);
-				if(col.class !== "ship")this.delete();
-			}
-			
-			Bullet.prototype.delete = function() {
-				colliders[this.collidersIndex] = null;
-				bullets[this.bulletsIndex] = null;
-			}
-			
-			var Enemy1 = function(x, y) {
-				this.position = new Vector2(x, y);
-				this.velocity = new Vector2(0, 0);
-				this.boundingBox = new BoundingBox(-5, -5, 5, 5);
-				
-				this.collidersIndex = colliders.push(this) - 1;
-				this.enemiesIndex = enemies.push(this) - 1;
-				this.class = 'Enemy1';
-			}
-			
-			Enemy1.prototype.draw = function(ctx) {
-				ctx.fillStyle = 'green';
-				ctx.rect(this.position.x - 5, this.position.y - 5, 10, 10);
-				ctx.fill();
-			}
-			
-			Enemy1.prototype.update = function() {
-				this.position.add(this.velocity);
-			}
-			
-			Enemy1.prototype.pathFinding = function(ship) {
-				var diff = ship.position.get();
-				diff.sub(this.position);
-				diff.normalize();
-				diff.mult(1);
-				this.velocity = diff;
-			}
-			
-			Enemy1.prototype.onCollide = function(obj) {
-				if(obj.class === "bullet"){
-					colliders[this.collidersIndex] = null;
-					enemies[this.enemiesIndex] = null;
-			
-				}
-			}
-			
-			var Box = function(pos) {
-				this.exists = true;
-				this.position = pos;
-				this.class = "box";
-				this.boundingBox = new BoundingBox(-10, -10, 10, 10);
-				this.collidersIndex = colliders.push(this) - 1;
-			}
-			
-			Box.prototype.onCollide = function() {
-				this.exists = false;
-				colliders[this.collidersIndex] = null;
-			}
-			
-			Box.prototype.draw = function(ctx){
-				ctx.fillStyle = "brown";
-				ctx.fillRect(this.position.x - 10, this.position.y - 10, 20, 20);
-			}
-			
-			var checkCollision = function(obj1, obj2) {
-				realBound1 = obj1.boundingBox.getExactPos(obj1.position);
-				realBound2 = obj2.boundingBox.getExactPos(obj2.position);
-				if(realBound1.topLeft.x > realBound2.bottomRight.x) return false;
-				if(realBound1.topLeft.y > realBound2.bottomRight.y) return false;
-				if(realBound2.topLeft.x > realBound1.bottomRight.x) return false;
-				if(realBound2.topLeft.y > realBound1.bottomRight.y) return false;
-
-				return true;
-			}
-			
-			var checkCollisions = function() {
-				var anythingCollides = false;
-				for (var i = 0; i < colliders.length; i++) {
-					if(colliders[i]!== null) {
-						for(var n = i + 1; n < colliders.length; n++) {
-							if(colliders[n] !== null){							
-								
-
-								var collides = checkCollision(colliders[i], colliders[n]);
-								if(collides) {
-									var coli = colliders[i];
-									var coln = colliders[n];
-									colliders[i].onCollide(coln);
-									colliders[n].onCollide(coli);
-								}
-							}
+						var collides = checkCollision(colliders[i], colliders[n]);
+						if(collides) {
+							var coli = colliders[i];
+							var coln = colliders[n];
+							colliders[i].onCollide(coln);
+							colliders[n].onCollide(coli);
 						}
 					}
 				}
 			}
-			var timer = 0;
-			var enemies = [];
+		}
+	}
+	
+	</script>
+	
+	<script src="boundingBox.js"></script>
+	<script src="vector.js"></script>
+	<script src="ship.js"></script>
+	<script src="bullet.js"></script>
+	<script src="enemy1.js"></script>
+	<script src="button.js"></script>
+	<script>
+		window.onload = function() {
+			var btn = new Button(150, 200, 200, 100,"Up/Down/Left/Right to move /n x to shoot /n Click on this rectangle to close it!", function () {
+				this.exists = false;
+			}, 10);
 			
 			setInterval(function() {
 				keyPressed = false;
 				c.fillStyle = "white";
 				c.fillRect(0, 0, 500, 500);
-				ship.doUserInput();
-				ship.doBorders();
-				ship.calculateAngularDrag();
-				ship.applyDrag();
-				ship.update();
-				ship.display(c);
 				
+				if(ship.isAlive){
+					ship.doUserInput();
+					ship.doBorders();
+					ship.calculateAngularDrag();
+					ship.applyDrag();
+					ship.update();
+					ship.display(c);
+				}
 				checkCollisions();
 				
 				timer++;
 				if(timer % (60 * 10) === 0){
-					new Enemy1(Math.random(400), Math.random(400));
+					var r = Math.random() * 2;
+					if(r <= 1) {
+						if(r <= 0.5){
+							new Enemy1(Math.random() * 400, 0);
+						} else {
+							new Enemy1(Math.random() * 400, 400);
+						}
+					} else {
+						if(r <= 1.5) {
+							new Enemy1(0, Math.random() * 400);
+						} else {
+							new Enemy1(400, Math.random() * 400);
+						}
+					}
 				}
 				
-				enemies.forEach(function (enemy){
-					if(enemy !== null) {
-						enemy.pathFinding(ship);
-						enemy.update();
-						enemy.draw(c);
+				bullets.nullForEach(function(bullet, i){
+					bullet.update();
+					bullet.draw(c);
+				});
+				
+				enemies.nullForEach(function (enemy){
+					enemy.pathFinding(ship);
+					enemy.update();
+					enemy.draw(c);
+					
+				});
+				
+				buttons.forEach(function(button) {
+					if(button.exists) {
+						button.draw(c);
 					}
 				});
 				
-				bullets.forEach(function(bullet, i){
-					if(bullet !== null){
-						bullet.update();
-						bullet.draw(c);
-					}
-				});
 				
 			}, 1000/fps);
 		};
@@ -385,111 +198,8 @@
 	</style>
 </head>
 <body>
-	<canvas id="ctx" width="500" height="500">
-		It appears your browser doesn't support the canvas tag! Get chrome.
-	</canvas>
-	<script>
 	
-		var Vector2 = function(x, y){
-			if(isNaN(x)){
-				x = 0;
-			}
-			if(isNaN(y)){
-				y = 0;
-			}
-			
-			this.x = x;
-			this.y = y;
-		}
-		
-		Vector2.prototype.add = function(v) {
-			
-			if(isNaN(v.x)){
-				v.x = 0;
-			}
-			if(isNaN(v.y)){
-				v.y = 0;
-			}
-			
-			this.x += v.x;
-			this.y += v.y;
-		}
-		
-		Vector2.add = function(v1, v2) {
-			return new Vector2(v1.x + v2.x, v1.y + v2.y);
-		}
-		
-		Vector2.prototype.sub = function(vector) {
-			this.x -= vector.x;
-			this.y -= vector.y;
-		}
-		
-		Vector2.sub = function(v1, v2) {
-			return v1.sub(v2);
-		}
-		
-		Vector2.prototype.get = function() {
-			return new Vector2(this.x, this.y);
-		}
-		
-		Vector2.prototype.set = function(x, y) {
-			this.x = x;
-			this.y = y;
-		}
-		
-		Vector2.prototype.mag = function() {
-			var m = Math.sqrt(this.x*this.x + this.y*this.y);
-			return m;
-		}
-		
-		Vector2.prototype.mult = function(s) {
-			this.x *= s;
-			this.y *= s;
-		}
-		
-		Vector2.mult = function(v, s) {
-			return v.mult(s);
-		}
-		
-		Vector2.prototype.div = function(s) {
-			this.x /= s;
-			this.y /= s;
-		}
-		
-		Vector2.div = function(v, s) {
-			return v.div(s);
-		}
-		
-		Vector2.dist = function(v1, v2) {
-			v1.sub(v2);
-			return v1.mag();
-		}
-		
-		Vector2.prototype.normalize = function() {
-			var m = this.mag();
-			this.div(m);
-		}
-		
-		Vector2.prototype.rotate = function(theta) {
-			sinTheta = Math.sin(theta);
-			cosTheta = Math.cos(theta);
-			var x = this.x,
-				y = this.y;
-			this.x = x*cosTheta - y*sinTheta;
-			this.y = y*cosTheta + x*sinTheta;
-		}
-		
-		constrain = function(num, min, max) {
-			
-			if(num < min) {
-				num = min;
-			} else if(num > max) {
-				num = max;
-			}
-			
-			return num;
-		}
-	</script>
-	<canvas id="ictx" width="500" height="500"/>
+	
+	
 </body>
 </html>
