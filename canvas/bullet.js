@@ -28,7 +28,6 @@ Bullet.prototype.draw = function(ctx) {
 }
 
 Bullet.prototype.onCollide = function(col) {
-	console.log(col);
 	if(col.class !== "ship")this.delete();
 }
 

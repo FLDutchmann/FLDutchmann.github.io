@@ -82,7 +82,6 @@
 	window.addEventListener('click', onClick, false);
 	
 	function onClick() {
-		console.log(bullets);
 		buttons.forEach(function(button) {
 			if(button.exists && button.checkMouseOver()) {
 				button.onClick();

@@ -17,7 +17,7 @@ var Ship = function() { // The spaceship object
 	this.isAlive = true;
 	
 	this.boundingBox = new BoundingBox(-8, -8, 8, 8);
-	this.collidersIndex = colliders.push(this) - 1;
+	this.collidersIndex = colliders.nullPush(this);
 };
 
 Ship.prototype.display = function(ctx) { //draws the ship
@@ -75,7 +75,6 @@ Ship.prototype.addAForce = function(af) {
 };
 
 var ship = new Ship();
-console.log(ship);
 Ship.prototype.doUserInput = function() {
 	
 	
@@ -162,4 +161,9 @@ Ship.prototype.onCollide = function(col) {
 
 Ship.prototype.delete = function() {
 	colliders[this.collidersIndex] = null;
+}
+
+Ship.prototype.displayHealth = function(ctx) {
+	ctx.fillStyle = "red";
+	ctx.fillRect(10, 10, this.health, 20);
 }

@@ -3,14 +3,12 @@ function wrapText(context, text, maxWidth) {
 	var line = '';
 	var lines = [];
 	
-	console.log("Max Width: " + maxWidth);
 	
 	for(var n = 0; n < words.length; n++) { //taken from http://www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
 	  if(words[n] !== "/n"){
 	  var testLine = line + words[n] + ' ';
 	  var metrics = context.measureText(testLine);
 	  var testWidth = metrics.width;
-	  console.log("testWidth: " + testWidth);
 	  if (testWidth > maxWidth && n > 0) {
 		lines.push(line);
 		line = words[n] + ' ';

@@ -3,8 +3,8 @@ var Enemy1 = function(x, y) {
 	this.velocity = new Vector2(0, 0);
 	this.boundingBox = new BoundingBox(-5, -5, 5, 5);
 	
-	this.collidersIndex = colliders.push(this) - 1;
-	this.enemiesIndex = enemies.push(this) - 1;
+	this.collidersIndex = colliders.nullPush(this);
+	this.enemiesIndex = enemies.nullPush(this);
 	this.class = 'enemy';
 	
 	this.damage = 1;
