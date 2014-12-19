@@ -6,7 +6,20 @@
 		It appears your browser doesn't support the canvas tag! Get chrome.
 	</canvas>
 	<script>
-		
+		Array.prototype.nullPush = function(item){
+			var i = 0;
+			var done = false;
+			while(i < this.length && !done) {
+				if(this[i] === null) {
+					this[i] = item;
+					return i;
+				}
+				i++;
+			}
+			i = this.length;
+			this[i] = item;
+			return i;
+		}
 	
 		Array.prototype.nullForEach = function(func) {
 			this.forEach(function(a, b, c) {
@@ -41,6 +54,8 @@
 		var enemies = [];
 		var buttons = [];
 		
+		var emptyBulletIndeces = [];
+		
 		var timer = 1;
 	</script>
 	<script>
@@ -67,9 +82,8 @@
 	window.addEventListener('click', onClick, false);
 	
 	function onClick() {
+		console.log(bullets);
 		buttons.forEach(function(button) {
-		
-			console.log(button.checkMouseOver());
 			if(button.exists && button.checkMouseOver()) {
 				button.onClick();
 			}
@@ -135,7 +149,7 @@
 	<script src="button.js"></script>
 	<script>
 		window.onload = function() {
-			var btn = new Button(150, 200, 200, 100,"Up/Down/Left/Right to move /n x to shoot /n Click on this rectangle to close it!", function () {
+			var btn = new Button(c, 150, 200, 200, 100,"Up/Down/Left/Right to move /n x to shoot /n Your health is displayed at the top left of the screen, if it reaches 0, you're dead /n Click on this rectangle to close it!", function () {
 				this.exists = false;
 			}, 10);
 			
@@ -151,6 +165,7 @@
 					ship.applyDrag();
 					ship.update();
 					ship.display(c);
+					ship.displayHealth(c);
 				}
 				checkCollisions();
 				

@@ -1,19 +1,19 @@
-function wrapText(context, text, x, constY, maxWidth, lineHeight) {
+function wrapText(context, text, maxWidth) {
 	var words = text.split(' ');
 	var line = '';
 	var lines = [];
 	
-	var y = constY;
+	console.log("Max Width: " + maxWidth);
 	
 	for(var n = 0; n < words.length; n++) { //taken from http://www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
 	  if(words[n] !== "/n"){
 	  var testLine = line + words[n] + ' ';
 	  var metrics = context.measureText(testLine);
 	  var testWidth = metrics.width;
+	  console.log("testWidth: " + testWidth);
 	  if (testWidth > maxWidth && n > 0) {
 		lines.push(line);
 		line = words[n] + ' ';
-		y += lineHeight;
 	  }
 	  else {
 		line = testLine;
@@ -26,22 +26,29 @@ function wrapText(context, text, x, constY, maxWidth, lineHeight) {
 	}
 	
 	lines.push(line);
+	
+	return lines;
+}
+
+var displayText = function(x, y, context, lines, lineHeight) {
 	var height = (lines.length - 1) * lineHeight;
-	var currY = constY - height/2;
+	var currY = y - height/2;
 	lines.forEach(function(currLine, i) {
 		context.fillText(currLine, x, (i + 0.5) * lineHeight + currY);
 	});
 }
 
-var Button = function(x, y, width, height, text, onClick, fontSize) {
+var Button = function(context, x, y, width, height, text, onClick, fontSize) {
 	this.position = new Vector2(x, y);
 	this.width = width;
 	this.height = height;
-	this.text = text;
 	this.onClick = onClick;
 	this.fontSize = fontSize === undefined ? 10: fontSize;
 	this.exists = true;
+	this.context = context;
 	
+	context.font = "" + this.fontSize + "pt Arial";
+	this.text = wrapText(this.context, text, this.width);
 	buttons.push(this);
 }
 
@@ -57,7 +64,7 @@ Button.prototype.draw = function(ctx){
 	ctx.font = "" + this.fontSize + "pt Arial";
 	//ctx.fillText(this.text, this.position.x + this.width/2, this.position.y + this.height/2 + this.fontSize/2);
 
-	wrapText(ctx, this.text, this.position.x + this.width/2, this.position.y + this.height/2, this.width, this.fontSize + 3);
+	displayText(this.position.x + this.width/2, this.position.y + this.height/2, ctx, this.text, this.fontSize + 3);
 }
 
 Button.prototype.checkMouseOver = function (){
@@ -66,4 +73,8 @@ Button.prototype.checkMouseOver = function (){
 		mouseX < this.position.x + this.width &&
 		mouseY < this.position.y + this.height) return true;
 	return false;
+}
+
+Button.prototype.delete = function() {
+	
 }

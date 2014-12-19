@@ -4,11 +4,17 @@ var Bullet = function(pos, vel) {
 	this.class = "bullet";
 	this.radius = 2;
 	this.boundingBox = new BoundingBox(-this.radius/2, -this.radius/2, this.radius/2, this.radius/2);
-	this.collidersIndex = colliders.push(this) - 1;
-	this.bulletsIndex = bullets.push(this) - 1;
+	this.collidersIndex = colliders.nullPush(this);
+	this.bulletsIndex = bullets.nullPush(this);
+	
+	this.lifeSpan = 10;
 }
 
 Bullet.prototype.update = function() {
+	this.lifeSpan -= 1/fps;
+	if(this.lifeSpan <= 0) {
+		this.delete();
+	}
 	this.position.add(this.velocity);
 }
 
