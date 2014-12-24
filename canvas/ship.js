@@ -20,7 +20,7 @@ var Ship = function() { // The spaceship object
 	this.collidersIndex = colliders.nullPush(this);
 };
 
-Ship.prototype.display = function(ctx) { //draws the ship
+Ship.prototype.draw = function(ctx) { //draws the ship
 	ctx.fillStyle = 'rgb(128, 23, 23)';
 	ctx.save();
 	ctx.translate(this.position.x, this.position.y);
@@ -74,7 +74,7 @@ Ship.prototype.addAForce = function(af) {
 	this.aAcceleration += af;
 };
 
-var ship = new Ship();
+
 Ship.prototype.doUserInput = function() {
 	
 	
@@ -157,6 +157,13 @@ Ship.prototype.onCollide = function(col) {
 	if(col.class == 'enemy'){
 		this.health -= col.damage;
 	}
+}
+
+Ship.prototype.collisionCondition = function(col) {
+	if(col.class === "enemy") {
+		return true;
+	}
+	return false;
 }
 
 Ship.prototype.delete = function() {

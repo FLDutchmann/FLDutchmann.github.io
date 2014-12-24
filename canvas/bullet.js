@@ -31,6 +31,13 @@ Bullet.prototype.onCollide = function(col) {
 	if(col.class !== "ship")this.delete();
 }
 
+Bullet.prototype.collisionCondition = function(col) {
+	if(col.class === "enemy"){
+		return true;
+	}
+	return false;
+}
+
 Bullet.prototype.delete = function() {
 	colliders[this.collidersIndex] = null;
 	bullets[this.bulletsIndex] = null;

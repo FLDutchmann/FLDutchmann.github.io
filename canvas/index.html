@@ -5,11 +5,17 @@
 	<canvas id="ctx" width="500" height="500">
 		It appears your browser doesn't support the canvas tag! Get chrome.
 	</canvas>
+	
+	
+	<style>
+	</style>
+</head>
+<body>
+	
 	<script>
 		Array.prototype.nullPush = function(item){
 			var i = 0;
-			var done = false;
-			while(i < this.length && !done) {
+			while(i < this.length) {
 				if(this[i] === null) {
 					this[i] = item;
 					return i;
@@ -41,12 +47,18 @@
 			keysPressed = 0,
 			keyIsPressed = false,
 			width = canvas.width,
-			height = canvas.height;
+			height = canvas.height,
+			icanvas = document.createElement("canvas"),
 			LEFT = 37,
 			UP = 38,
 			RIGHT = 39,
 			DOWN = 40,
-			fps = 60; //Warning: affects simulation speed
+			fps = 60, //Warning: affects simulation speed
+			score = 0;
+		
+		icanvas.width = width;
+		icanvas.height = height;
+		var ic = icanvas.getContext('2d');
 		
 		var keys = [];
 		var colliders = [];
@@ -57,87 +69,10 @@
 		var emptyBulletIndeces = [];
 		
 		var timer = 1;
-	</script>
-	<script>
-	
-	
-	
-	function updateMouse(e) {
-		var pos = getMousePos(canvas, e);
-		mouseX = pos.x;
-		mouseY = pos.y;
+		
+		var upgradeCosts = {
+			reduceCooldown: 5
 		}
-	window.addEventListener('mousemove', updateMouse, false);
-
-	function getMousePos(canvas, evt) {
-		var rect = canvas.getBoundingClientRect();
-		return {
-		  x: evt.clientX - rect.left,
-		  y: evt.clientY - rect.top
-		};
-	}
-	
-	
-	
-	window.addEventListener('click', onClick, false);
-	
-	function onClick() {
-		buttons.forEach(function(button) {
-			if(button.exists && button.checkMouseOver()) {
-				button.onClick();
-			}
-		});
-	}
-	
-	window.addEventListener('keyup',checkUp,false);
-	function checkUp(e) {
-		keys[e.keyCode] = false;
-		keysPressed -= 1;
-		if(keysPressed === 0) {
-			keyIsPressed = false;
-		} else {
-			keyIsPressed = true;
-		}
-	}
-	
-	window.addEventListener('keydown',checkDown,false);
-	function checkDown(e) {
-		keys[e.keyCode] = true;
-		keysPressed += 1;
-	}
-	
-	var checkCollision = function(obj1, obj2) {
-		realBound1 = obj1.boundingBox.getExactPos(obj1.position);
-		realBound2 = obj2.boundingBox.getExactPos(obj2.position);
-		if(realBound1.topLeft.x > realBound2.bottomRight.x) return false;
-		if(realBound1.topLeft.y > realBound2.bottomRight.y) return false;
-		if(realBound2.topLeft.x > realBound1.bottomRight.x) return false;
-		if(realBound2.topLeft.y > realBound1.bottomRight.y) return false;
-
-		return true;
-	}
-	
-	var checkCollisions = function() {
-		var anythingCollides = false;
-		for (var i = 0; i < colliders.length; i++) {
-			if(colliders[i]!== null) {
-				for(var n = i + 1; n < colliders.length; n++) {
-					if(colliders[n] !== null){							
-						
-
-						var collides = checkCollision(colliders[i], colliders[n]);
-						if(collides) {
-							var coli = colliders[i];
-							var coln = colliders[n];
-							colliders[i].onCollide(coln);
-							colliders[n].onCollide(coli);
-						}
-					}
-				}
-			}
-		}
-	}
-	
 	</script>
 	
 	<script src="boundingBox.js"></script>
@@ -146,16 +81,177 @@
 	<script src="bullet.js"></script>
 	<script src="enemy1.js"></script>
 	<script src="button.js"></script>
+	<script src="UI.js"></script>
+	
 	<script>
+		var ship = new Ship();
+			
+			
+		var btn = new Button(c, 150, 200, 300, 100,"Up/Down/Left/Right to move /n x to shoot /n Your health is displayed at the top left of the screen, if it reaches 0, you're dead /n You can access the upgrade store by pressing space /n Click here to close this message!", function () {
+			this.isDisplayed = false;
+		}, 10);
+	
+		var upgradeWindow = new UIElement(100, 100, 300, 300, function(ctx) {
+			ctx.strokeStyle = "black";
+			ctx.fillStyle = "white";
+			ctx.fillRect(this.x, this.y, this.width, this.height);
+			ctx.strokeRect(this.x, this.y, this.width, this.height);
+			ctx.fillStyle = "black";
+			ctx.font = "20 pt arial"
+			ctx.fillText("UPGRADES", this.x + this.width/2, this.y + 35);
+		}, [new Button(c, 120, 150, 50, 50, "Reduce Cooldown Cost: /n " + upgradeCosts.reduceCooldown, function() {
+			if(score >= upgradeCosts.reduceCooldown) {
+				
+				ship.maxCooldown /= 1.1;
+				score -= upgradeCosts.reduceCooldown;
+				upgradeCosts.reduceCooldown = Math.ceil(upgradeCosts.reduceCooldown * 1.1);
+				this.text = wrapText(c, "Reduce Cooldown Cost: " + upgradeCosts.reduceCooldown, this.width);
+				
+			}
+			
+		}, 7, false)], false);
+			
+		
+		
+		
+		function updateMouse(e) {
+			var pos = getMousePos(canvas, e);
+			mouseX = pos.x;
+			mouseY = pos.y;
+			}
+		window.addEventListener('mousemove', updateMouse, false);
+
+		function getMousePos(canvas, evt) {
+			var rect = canvas.getBoundingClientRect();
+			return {
+			  x: evt.clientX - rect.left,
+			  y: evt.clientY - rect.top
+			};
+		}
+		
+		
+		
+		window.addEventListener('click', onClick, false);
+		
+		function onClick() {
+			buttons.forEach(function(button) {
+				if(button.isDisplayed && button.checkMouseOver()) {
+					button.onClick();
+				}
+			});
+		}
+		
+		window.addEventListener('keyup',checkUp,false);
+		function checkUp(e) {
+			keys[e.keyCode] = false;
+			keysPressed -= 1;
+			if(keysPressed === 0) {
+				keyIsPressed = false;
+			} else {
+				keyIsPressed = true;
+			}
+		}
+		
+		
+		
+		window.addEventListener('keydown',checkDown,false);
+		function checkDown(e) {
+			keys[e.keyCode] = true;
+			if(e.keyCode === 32) {
+				if(upgradeWindow.isDisplayed){
+					upgradeWindow.close();
+				} else {
+					upgradeWindow.open();
+				}
+			}
+			keysPressed += 1;
+		}
+		
+		var checkCollision = function(obj1, obj2) {
+			realBound1 = obj1.boundingBox.getExactPos(obj1.position);
+			realBound2 = obj2.boundingBox.getExactPos(obj2.position);
+			if(realBound1.topLeft.x > realBound2.bottomRight.x) return false;
+			if(realBound1.topLeft.y > realBound2.bottomRight.y) return false;
+			if(realBound2.topLeft.x > realBound1.bottomRight.x) return false;
+			if(realBound2.topLeft.y > realBound1.bottomRight.y) return false;
+
+			return true;
+		}
+		
+		var checkCollisions = function(ic) {
+			var anythingCollides = false;
+			for (var i = 0; i < colliders.length; i++) {
+				if(colliders[i]!== null) {
+					for(var n = i + 1; n < colliders.length; n++) {
+						if(colliders[n] !== null){			
+						
+							var collides = checkCollision(colliders[i], colliders[n]);
+							if(collides) {
+								var obj1col = colliders[i].collisionCondition(colliders[n]);
+								var obj2col = colliders[n].collisionCondition(colliders[i]);
+								if(obj1col || obj2col){
+									detailedCheckCollision(ic, colliders[i], colliders[n], obj1col, obj2col);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		var detailedCheckCollision = function(ictx, obj1, obj2, obj1col, obj2col) { //objcol says if the object's oncollision should be executed
+			var bound1 = obj1.boundingBox.getExactPos(obj1.position);
+			
+			var bound2 = obj2.boundingBox.getExactPos(obj2.position);
+			var ax = bound1.topLeft.x,
+				ay = bound1.topLeft.y,
+				aX = bound1.bottomRight.x,
+				aY = bound1.bottomRight.y;
+			var bx = bound2.topLeft.x,
+				by = bound2.topLeft.y,
+				bX = bound2.bottomRight.x,
+				bY = bound2.bottomRight.y;
+			var cx = ax < bx ? bx: ax,
+				cy = ay < by ? by: ay,
+				cX = aX < bX ? aX: bX,
+				cY = aY < bY ? aY: bY;
+				
+			ictx.clearRect(cx, cy, cX - cx, cY - cy);
+			obj1.draw(ictx);
+			var iA = ictx.getImageData(cx, cy, cX - cx, cY - cy);
+			
+			ictx.clearRect(cx, cy, cX - cx, cY - cy);
+			obj2.draw(ictx);
+			var iB = ictx.getImageData(cx, cy, cX - cx, cY - cy);
+			
+			var resolution = 4 * Math.ceil(iA.length/10);
+			for(var i = 3; i < iA.data.length; i += resolution){
+				if(iA.data[i] > 0 && iB.data[i] > 0) {
+					if(obj1col){
+						obj1.onCollide(obj2);
+					}
+					if(obj2col){
+						obj2.onCollide(obj1);
+					}
+					return;
+				}
+			}
+			
+		}
+		
+		var incrementScore = function(num) {
+			score += num;
+		}
+		
+	
 		window.onload = function() {
-			var btn = new Button(c, 150, 200, 200, 100,"Up/Down/Left/Right to move /n x to shoot /n Your health is displayed at the top left of the screen, if it reaches 0, you're dead /n Click on this rectangle to close it!", function () {
-				this.exists = false;
-			}, 10);
+			
 			
 			setInterval(function() {
 				keyPressed = false;
 				c.fillStyle = "white";
 				c.fillRect(0, 0, 500, 500);
+				
 				
 				if(ship.isAlive){
 					ship.doUserInput();
@@ -163,11 +259,10 @@
 					ship.calculateAngularDrag();
 					ship.applyDrag();
 					ship.update();
-					ship.display(c);
+					ship.draw(c);
 					ship.displayHealth(c);
 				}
-				checkCollisions();
-				
+				checkCollisions(ic);
 				timer++;
 				if(timer % (60 * 10) === 0){
 					var r = Math.random() * 2;
@@ -198,22 +293,22 @@
 					
 				});
 				
+				if(upgradeWindow.isDisplayed) {
+					upgradeWindow.drawFunc(c);
+				}
+				
 				buttons.forEach(function(button) {
-					if(button.exists) {
+					if(button.isDisplayed) {
 						button.draw(c);
 					}
 				});
 				
-				
+				c.font = "15pt Arial";
+				c.fillStyle = "black";
+				c.fillText(score, width - 100, 35);
 			}, 1000/fps);
 		};
 	</script>
-	<style>
-	</style>
-</head>
-<body>
-	
-	
 	
 </body>
 </html>

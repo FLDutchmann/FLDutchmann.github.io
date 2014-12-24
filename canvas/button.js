@@ -29,25 +29,26 @@ function wrapText(context, text, maxWidth) {
 }
 
 var displayText = function(x, y, context, lines, lineHeight) {
-	var height = (lines.length - 1) * lineHeight;
+	var height = (lines.length - 0.5) * (lineHeight + 0.5);
 	var currY = y - height/2;
 	lines.forEach(function(currLine, i) {
-		context.fillText(currLine, x, (i + 0.5) * lineHeight + currY);
+		context.fillText(currLine, x + 1, i * (lineHeight + 0.5) + currY + lineHeight/2);
 	});
 }
 
-var Button = function(context, x, y, width, height, text, onClick, fontSize) {
+
+var Button = function(context, x, y, width, height, text, onClick, fontSize, isDisplayed) {
 	this.position = new Vector2(x, y);
 	this.width = width;
 	this.height = height;
 	this.onClick = onClick;
 	this.fontSize = fontSize === undefined ? 10: fontSize;
-	this.exists = true;
+	this.isDisplayed = isDisplayed === undefined ? true : isDisplayed;
 	this.context = context;
+	this.buttonsIndex = buttons.nullPush(this);
 	
 	context.font = "" + this.fontSize + "pt Arial";
 	this.text = wrapText(this.context, text, this.width);
-	buttons.push(this);
 }
 
 Button.prototype.draw = function(ctx){
@@ -60,8 +61,7 @@ Button.prototype.draw = function(ctx){
 
 	ctx.fillStyle = "black";
 	ctx.font = "" + this.fontSize + "pt Arial";
-	//ctx.fillText(this.text, this.position.x + this.width/2, this.position.y + this.height/2 + this.fontSize/2);
-
+	
 	displayText(this.position.x + this.width/2, this.position.y + this.height/2, ctx, this.text, this.fontSize + 3);
 }
 
@@ -73,6 +73,3 @@ Button.prototype.checkMouseOver = function (){
 	return false;
 }
 
-Button.prototype.delete = function() {
-	
-}

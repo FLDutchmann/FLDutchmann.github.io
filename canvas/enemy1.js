@@ -35,6 +35,13 @@ Enemy1.prototype.onCollide = function(obj) {
 	if(obj.class === "bullet"){
 		colliders[this.collidersIndex] = null;
 		enemies[this.enemiesIndex] = null;
-
+		incrementScore(1);
 	}
+}
+
+Enemy1.prototype.collisionCondition = function(col) {
+	if(col.class === "bullet") {
+		return true;
+	}
+	return false;
 }
