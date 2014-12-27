@@ -11,6 +11,7 @@
 	</style>
 </head>
 <body>
+	<script src="vector.js"></script>
 	
 	<script>
 		Array.prototype.nullPush = function(item){
@@ -70,13 +71,45 @@
 		
 		var timer = 1;
 		
+		var multiShotExtraBullets = function(ship, numBullets) {
+			for(var i = 0; i < numBullets; i++){
+				var vel = new Vector2(0, ship.shotSpeed);
+				vel.rotate(ship.angle);
+				vel.add(ship.velocity);
+				var offset = new Vector2(7 * (Math.floor(i/2)+1), 0);
+				if(i % 2 === 0) {
+					offset.mult(-1);
+				}
+				offset.rotate(ship.angle);
+				var pos = ship.position.get();
+				pos.add(offset);
+				new Bullet(pos, vel);
+			}
+		}
+		
+		var multiShotFunctions = [
+			function(ship) {
+			}, 
+			function(ship) {
+				multiShotExtraBullets(ship, 1);
+			}, 
+			function(ship) {
+				multiShotExtraBullets(ship, 2);
+			}, 
+			function(ship) {
+				multiShotExtraBullets(ship, 3);
+			}, 
+			function(ship) {
+				multiShotExtraBullets(ship, 4);
+			}
+		];
+		
 		var upgradeCosts = {
 			reduceCooldown: 5
 		}
 	</script>
 	
 	<script src="boundingBox.js"></script>
-	<script src="vector.js"></script>
 	<script src="ship.js"></script>
 	<script src="bullet.js"></script>
 	<script src="enemy1.js"></script>
@@ -105,6 +138,7 @@
 				ship.maxCooldown /= 1.1;
 				score -= upgradeCosts.reduceCooldown;
 				upgradeCosts.reduceCooldown = Math.ceil(upgradeCosts.reduceCooldown * 1.1);
+				c.font = this.fontSize + "pt Arial";
 				this.text = wrapText(c, "Reduce Cooldown Cost: " + upgradeCosts.reduceCooldown, this.width);
 				
 			}
@@ -308,6 +342,8 @@
 				c.fillText(score, width - 100, 35);
 			}, 1000/fps);
 		};
+		
+		
 	</script>
 	
 </body>

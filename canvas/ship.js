@@ -12,12 +12,18 @@ var Ship = function() { // The spaceship object
 	this.cooldown = 0;
 	this.maxCooldown = 1;
 	
-	this.maxHealt = 100;
+	this.maxHealth = 100;
 	this.health = 100;
 	this.isAlive = true;
 	
 	this.boundingBox = new BoundingBox(-8, -8, 8, 8);
 	this.collidersIndex = colliders.nullPush(this);
+	
+	this.multiShotLevel = 4;
+	this.lazerLevel = 0;
+	this.explosiveLevel = 0;
+	
+	this.shotSpeed = 5;
 };
 
 Ship.prototype.draw = function(ctx) { //draws the ship
@@ -46,10 +52,12 @@ Ship.prototype.draw = function(ctx) { //draws the ship
 Ship.prototype.update = function() {
 	this.cooldown -= 1/30;
 	
-	this.aVelocity += this.aAcceleration;
-	this.aVelocity = constrain(this.aVelocity, -0.07, 0.07);
-	this.angle += this.aVelocity;
-	this.aAcceleration = 0;
+	//his.aVelocity += this.aAcceleration;
+	//this.aVelocity = constrain(this.aVelocity, -0.07, 0.07);
+	//this.angle += this.aVelocity;
+	//this.aAcceleration = 0;
+	this.angle += this.aVelocity;	
+	this.aVelocity = 0;
 	
 	this.acceleration.rotate(this.angle);//rotates the acceleration to the right direction
 	
@@ -80,11 +88,11 @@ Ship.prototype.doUserInput = function() {
 	
 	// the inputs allow you to press multipe keys at the same time, for further explaination see top of code
 	if (keyIsPressed && keys[RIGHT]) {
-		this.addAForce(0.005);
+		this.aVelocity += 0.10;
 	}
 	
 	if (keyIsPressed && keys[LEFT]) {
-		this.addAForce(-0.005);
+		this.aVelocity += -0.10;
 	}
 	
 	if (keyIsPressed && keys[UP]) {
@@ -107,7 +115,7 @@ Ship.prototype.doUserInput = function() {
 
 Ship.prototype.applyDrag = function() {// calculates the drag
 	var speed = this.velocity.mag();
-	var dragMagnitude = 0.003 * speed * speed;
+	var dragMagnitude = 0.003 * speed; //* speed;
 	
 	// Direction is inverse of velocity
 	var dragForce = this.velocity.get();
@@ -145,11 +153,12 @@ Ship.prototype.doBorders = function() {//wraps the ship around the borders
 
 Ship.prototype.fireBullet = function() {
 	if(this.cooldown <= 0) {
-		var vel = new Vector2(0, 5);
+		var vel = new Vector2(0, this.shotSpeed);
 		vel.rotate(this.angle);
 		vel.add(this.velocity);
 		new Bullet(this.position.get(), vel);
 		this.cooldown = this.maxCooldown;
+		multiShotFunctions[this.multiShotLevel](this);
 	}
 }
 
