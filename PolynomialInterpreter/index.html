@@ -1,24 +1,37 @@
-<script src="Polynomials.js"></script>
-<input id="inp" width="500px"></input>
-<button onclick="interpretInput()">run</button>
-<p>Result:</p>
-<p id="out">test</p>
-<script> 
-	var interpretInput = function() {
-		var inp = document.getElementById("inp");
-		var out = document.getElementById("out");
-		out.innerHTML = stringToPolynomial(inp.value).toString();
-	}
-</script>
+<html>
+	<head>
+
+		<script src="Polynomials.js"></script>
+		<title>Polynomial Interpreter</title>
+		<style>
+			*{
+				font-family: monospace, sans-serif;
+				font-size: 1.1em;
+			}
+
+			input{
+				width: 100%;
+			}
+		</style>
+
+		<script> 
+			var interpretInput = function() {
+				var inp = document.getElementById("inp");
+				var out = document.getElementById("out");
+				out.innerHTML = stringToPolynomial(inp.value).toString();
+			}
+		</script>
+	</head>
+
+	<body>
+		<input id="inp" width="500px"></input>
+		<button onclick="interpretInput()">run</button>
+		<p>Result:</p>
+		<p id="out">test</p>
+	</body>
+</html>
 
 
-<style>
-*{
-	font-family: "Consolas";
-	font-size: 1.1em;
-}
 
-input{
-	width: 100%;
-}
-</style>
+
+

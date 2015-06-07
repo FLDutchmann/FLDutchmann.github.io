@@ -87,6 +87,10 @@ Polynomial.prototype.pow = function(n) {
 }
 
 Polynomial.recPow = function(pol, n) {
+	if(n === 0){
+		return new Polynomial([new XTerm(1, 0)]);
+	}
+
 	if(n === 1){
 		return pol.get();
 	}
