@@ -19,7 +19,7 @@ var Ship = function() { // The spaceship object
 	this.boundingBox = new BoundingBox(-8, -8, 8, 8);
 	this.collidersIndex = colliders.nullPush(this);
 	
-	this.multiShotLevel = 4;
+	this.multiShotLevel = 0;
 	this.lazerLevel = 0;
 	this.explosiveLevel = 0;
 	
