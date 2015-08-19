@@ -6,8 +6,8 @@
 <div id="inputDiv">
 </div>
 
-<p>Linear equation of size:</p>
-<select id="selection" onclick="drawInput()"></select>
+<p>Linear equations of size:</p>
+<select id="selection" onchange="drawInput()"></select>
 <div id="output"> </div>
 
 <button onclick="calculate()">Calculate!</button>
@@ -21,49 +21,33 @@ var pow = function(num, exponent) {
 }
 
 var calculate = function() {
-	var variables = [];
-	var indeces = [];
-	var size = document.getElementById("selection").value;
-	for (var i = 0; i < size; i++) {
-		input = document.getElementById(i).value;
-		var sides = input.split("=");
-		if (input.length !== 2) {
-			return;
-		}
-		var adds = input[0].split("+");
-		window.alert(2);
-		adds.forEach(function(product){
-			var number = parseInt(product);
-			var variable = product.split(number);
-			console.log(variable);
-			variables.forEach(function(varName, index) {
-				if(variable !== varName) {
-					varibles.push(variable);
-					indeces[variable] = index;
-				}
-			});
-			
-		});
-	}
-	
-	/*var arra = [];
+	var arra = [];
 	var arr = [];
-	for (var i = 0; i < document.getElementById("selection").value; i++) {
+    var selection = document.getElementById("selection");
+	for (var i = 0; i < selection.value; i++) {
 		var row = [];
 		var solutionRow = [];
-		for(var n = 0; n < document.getElementById("selection").value; n++) {
+		for(var n = 0; n < selection.value; n++) {
 			var str = "input" + i + "," + n;
-			row.push(document.getElementById(str).value);
+            var val = document.getElementById(str).value;
+            
+            val = val === "" ? 1:Number(val);
+            if(isNaN(val)){
+                console.log("row " + i + ", column " + n + " is not a number");
+            }
+
+			row.push(val);
 		}
 		arra.push(row);
 		solutionRow.push(document.getElementById("answer" + i).value);
 		arr.push(solutionRow);
-	}*/
+	}
+
 	var A = new Matrix(arra);
 	var B = new Matrix(arr);
 	var Sol = Matrix.mult(A.inverse(), B);
 	document.getElementById("output").innerHTML = "";
-	for (var i = 0; i < document.getElementById("selection").value; i++) {
+	for (var i = 0; i < selection.value; i++) {
 		if(isNaN(Sol.matrix[i][0])) {
 			document.getElementById("output").innerHTML += "<p>"+varNames[i] +" is unsolvable, sorry!</p>"
 		} else {
@@ -73,16 +57,11 @@ var calculate = function() {
 	}
 }
 
+var varNames = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", ];
 
 var drawInput = function() {
-	var input = document.getElementById("inputDiv");
-	input.innerHTML = "";
-	var size = document.getElementById("selection").value;
 	
-	for(var i = 0; i < size; i++){
-		input.innerHTML += "<input id='" + i + "'></input> <br/>"
-	}
-	/*var input = document.getElementById("inputDiv");
+	var input = document.getElementById("inputDiv");
 	var size = document.getElementById("selection").value;
 	input.innerHTML = "";
 	for(var i = 0; i < size; i++) {
@@ -98,9 +77,8 @@ var drawInput = function() {
 		input.innerHTML += " = <input id='answer"+i+"'></input>"
 		
 		input.innerHTML += " </form>";
-	}*/
+	}
 }
-drawInput();
 
 for(i = 2; i <= 15; i++) {
 	
@@ -302,5 +280,10 @@ Matrix.prototype.inverse = function() {
     mat.multScalar(factor);
     return new Matrix(mat.matrix);
 }; 
+
+
+
+drawInput();
+
 </script>
 </body>
