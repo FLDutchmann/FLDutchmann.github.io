@@ -305,32 +305,28 @@ var interpretPolynomial = function(str) {
 
 Polynomial.prototype.toString = function() {
 	var out = "";
-	for(var i = this.XTerms.length-1; i >= 0; i--){
-		if(i === 0){
-			if(this.XTerms[i].factor === 0){
-				out = out.substring(0, out.length-3);
-			} else {
-
-				out += this.XTerms[i].factor;
-
-			}
-		} else if(i === 1){
-			if(this.XTerms[i].factor !== 0){
-				if(this.XTerms[i].factor === 1){
-					out += "x + ";
-				} else {
-					out += this.XTerms[i].factor + "x + ";
-				}
-			}
+	if(this.XTerms.length !== 0){
+		var xt = this.XTerms[this.XTerms.length - 1];
+		out += xt.factor + "x^" + xt.exponent;
+	}
+	for(var i = this.XTerms.length-2; i >= 0; i--){
+		var xt = this.XTerms[i];
+		var xtstr;
+		if(xt.exponent === 0){
+			xtstr = Math.abs(xt.factor);
+		} else if (xt.exponent === 1) {
+			xtstr = Math.abs(xt.factor) + "x";
 		} else {
-			if(this.XTerms[i].factor !== 0){
-				if(this.XTerms[i].factor === 1){
-					out += "x^" + this.XTerms[i].exponent + " + ";
-				} else {
-					out += this.XTerms[i].factor + "x^" + this.XTerms[i].exponent + " + ";
-				}
-			}
+			xtstr = Math.abs(xt.factor) + "x^" + xt.exponent;
+		}
 
+
+		if(xt.factor < 0){
+
+			out += " - " + xtstr;
+		} else {
+
+			out += " + " + xtstr;
 		}
 	}
 	return out;
