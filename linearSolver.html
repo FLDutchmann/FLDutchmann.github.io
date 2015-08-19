@@ -275,7 +275,11 @@ Matrix.prototype.cofactor = function() {
             for (var n = 0; n < this.columns; n++) {
 				var val;
 				
-				val = pow(-1, i+n) * this.getMinor(i, n).determinant();
+				if((i+n) % 2 === 1){
+					val = -this.getMinor(i, n).determinant();
+				} else {
+					val = this.getMinor(i, n).determinant();
+				}
 				
 
 				
