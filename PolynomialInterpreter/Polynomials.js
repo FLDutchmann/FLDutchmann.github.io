@@ -44,6 +44,28 @@ XTerm.prototype.get = function() {
 	return new XTerm(this.factor, this.exponent);
 }
 
+XTerm.prototype.toString = function() {
+	var exp = this.exponent;
+	var fact = Math.abs(this.factor);
+	var str = "";
+	if(fact === 0){
+		str = "0";
+	} else if (fact === 1 && exp >= 2){
+		str = "x^" + exp;
+	} else if(fact === 1 && exp === 1){
+		str = "x";
+	} else if (exp === 1){
+		str = fact + "x";
+	} else if (exp === 0){
+		str = fact;
+	} else {
+		str = fact + "x^" + exp;
+	}
+
+	return str;
+
+
+}
 
 var Polynomial = function (XTerms){
 	this.XTerms = XTerms;
@@ -305,30 +327,29 @@ var interpretPolynomial = function(str) {
 
 Polynomial.prototype.toString = function() {
 	var out = "";
-	if(this.XTerms.length !== 0){
-		var xt = this.XTerms[this.XTerms.length - 1];
-		out += xt.factor + "x^" + xt.exponent;
-	}
-	for(var i = this.XTerms.length-2; i >= 0; i--){
-		var xt = this.XTerms[i];
-		var xtstr;
-		if(xt.exponent === 0){
-			xtstr = Math.abs(xt.factor);
-		} else if (xt.exponent === 1) {
-			xtstr = Math.abs(xt.factor) + "x";
-		} else {
-			xtstr = Math.abs(xt.factor) + "x^" + xt.exponent;
+	for(var i = this.XTerms.length-1; i >= 0; i--){
+		var str = this.XTerms[i].toString();
+		var fact = this.XTerms[i].factor;
+		var sign = " + ";
+		if(fact < 0){
+			sign = " - ";
 		}
-
-
-		if(xt.factor < 0){
-
-			out += " - " + xtstr;
-		} else {
-
-			out += " + " + xtstr;
+		if(str !== "0"){
+			out += sign + str;
 		}
 	}
+	console.log(out);
+	out = out.slice(1, 2) + out.slice(3, out.length);
+
+	console.log(out);
+	if(out[0] !== "-"){
+		out = out.slice(1, out.length);
+	}
+
+	if(out === ""){
+		out = "0";
+	}
+
 	return out;
 }
 
