@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Fourier Series </title>
+		<script src="fourier.js"></script>
+		<style>
+			input{
+				float:left;
+			}
+			
+			#inputs{
+				float:left;
+				width:200px;
+			}
+		</style>
+	</head>
+	
+	
+	<body>
+		<canvas id="canvas" width="400" height="400"> Your browser does not support the canvas tag </canvas>
+		<div id="inputs">
+			<p>Function to approximate: </p>
+			<input id="function" value="sign(x)"></input>
+			<br>
+			<p>Period:</p>
+			<input id="period" value="2*pi"></input>
+			<br>
+			<p>Number of terms:</p>
+			<input id="numTerms" value="5"></input>
+			<br><br>
+			<button onclick="calcFourier()"> Plot </button>
+			<button onclick="clearPlots()"> Clear Plots </button>
+		</div>
+		
+		<script> 
+			var f;
+			var sign = Math.sign;
+			var sin = Math.sin;
+			var cos = Math.cos;
+			var abs = Math.abs;
+			var pi = Math.PI;
+			var e = Math.E;
+			
+			var calcFourier = function(){
+				f = document.getElementById("function").value;
+				var period = document.getElementById("period").value;
+				
+				var numTerms = document.getElementById("numTerms").value;
+				numTerms = Number(numTerms);
+				
+				period = eval(period);
+				console.log(period);
+				var func = function(x){
+					return eval(f);
+				};
+				
+
+
+
+				var terms = getFourierFactors(func, numTerms, period);
+				var fs = new FourierSeries(terms.cosTerms, terms.sinTerms, period);
+				funcs = [fs];
+
+								
+				draw();
+			}
+			
+			calcFourier();
+		</script>
+	</body>
+
+</html>
